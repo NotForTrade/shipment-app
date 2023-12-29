@@ -59,6 +59,18 @@
     kubectl -n NAMESPACE rollout restart deploy/redis-pop-deployment
 
 
+## restart shipment-app pod
+
+    kubectl -n shipment-app rollout restart deploy/shipment-app-deployement
+
+
+## restart brontosaurus-pop pod
+
+    kubectl -n shipment-app rollout restart deploy/brontosaurus-pop
+
+
 ## get the logs
 
     kubectl -n shipment-app logs deploy/redis-pop-deployment
+
+

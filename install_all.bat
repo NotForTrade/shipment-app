@@ -12,7 +12,7 @@ kind load docker-image shipment-app:latest
 
 kubectl apply -f deploy/shipment-app.yml
 
-kubectl -n shipment-app rollout restart deploy/shipment-app
+kubectl -n shipment-app rollout restart deploy/shipment-app-deployment
 
 kubectl -n shipment-app rollout restart deploy/brontosaurus-pop
 

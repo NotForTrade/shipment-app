@@ -1,5 +1,5 @@
 - Trouver comment print sur flask -> done, (using app.logger.x, info ne passe pas sur les logs pour raison de niveau de logs). Solution : utiliser logger.warning ou éditer le niveau des logs sur le yml
-- ne pas à avoir à définir app.js sur app.py, flask doit pouvoir handle ça
+- ne pas à avoir à définir app.js sur app.py, flask doit pouvoir handle ça -> fait
 - faire fonctionner pop-redis.py
 - 
 
