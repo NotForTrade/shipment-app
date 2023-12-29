@@ -40,25 +40,25 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-pop-deployment
+  name: brontosaurus-pop
   namespace: shipment-app
   labels:
-    app: redis-pop
+    app: brontosaurus-pop
 spec:
   #replicas: 3
   selector:
     matchLabels:
-      app: redis-pop
+      app: brontosaurus-pop
   template:
     metadata:
       labels:
-        app: redis-pop
+        app: brontosaurus-pop
     spec:
       containers:
-      - name: redis-pop-container
+      - name: worker
         image: shipment-app:latest
         command: ["python"]
-        args: ["pop_redis.py"]
+        args: ["brontosaurus_queue_worker.py"]
         imagePullPolicy: Never  # kind can't find the local image without this parameter
         ports:
         - containerPort: 5000

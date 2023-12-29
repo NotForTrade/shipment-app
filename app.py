@@ -7,6 +7,12 @@ import os
 app = Flask(__name__)
 
 
+redis_host=os.environ.get("REDIS_HOST")
+redis_port=int(os.environ.get("REDIS_PORT"))
+
+if redis_host != None and redis_port != None:
+    r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+
 
 ## ------------------------------------------------------------------
 ## External connector
@@ -15,13 +21,9 @@ app = Flask(__name__)
 def brontosaurus_push_redis():
     payload = json.dumps(request.json)
 
-    r = redis.Redis(host=os.environ.get("REDIS_HOST"), port=int(os.environ.get("REDIS_PORT")), decode_responses=True)
-
     queue = "brontosaurus_queue"
 
-    print("The following data has been pushed to the redis queue:")
-    print(queue, payload, sep="\n")
-
+    app.logger.warning(f"The following data has been pushed to the redis queue: queue: {queue} payload: {payload}")
 
     try:
         r.rpush(queue, payload)
@@ -56,18 +58,10 @@ def api():
 
 ## ------------------------------------------------------------------
 ## WEBAPP
-
-@app.route("/home")
-def home():
+@app.route("/")
+def index():
     return render_template('index.html')
 
-@app.route("/app.js")
-def js():
-    # Open the HTML file and read its contents
-    with open('app.js', 'r', encoding='utf-8') as file:
-        content = file.read()
-
-    return content
 
 
 if __name__ == '__main__':

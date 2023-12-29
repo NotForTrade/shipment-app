@@ -3,7 +3,7 @@ import json
 import os
 
 
-print("Hello world! This is redis-pop")
+print("Hello world! This is brontosaurus_queue_worker!")
 
 
 
