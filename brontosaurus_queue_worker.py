@@ -3,7 +3,7 @@ import json
 import os
 from pint import UnitRegistry
 import pint
-
+import requests
 
 
 print("Hello world! This is brontosaurus_queue_worker!")
@@ -128,10 +128,12 @@ while True:
 
     if normalized_data != None:
 
-        print('-----------------------------------------')
-        print(normalized_data)
-        print('-----------------------------------------')
+        # print('-----------------------------------------')
+        # print(normalized_data)
+        # print('-----------------------------------------')
+
+
+        # utiliser requests 
 
 
         r.hset(f"shipment:{normalized_data["Shipment_id"]}", mapping= normalized_data)
-    
