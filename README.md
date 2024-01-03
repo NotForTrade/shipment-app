@@ -74,3 +74,7 @@
     kubectl -n shipment-app logs deploy/redis-pop-deployment
 
 
+## edit the scale of a service
+
+    kubectl -n shipment-app scale --replicas=0 deploy/brontosaurus-pop
+

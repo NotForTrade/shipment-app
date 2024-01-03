@@ -17,7 +17,7 @@ print("port:" , os.environ.get('REDIS_PORT'))
 
 
 # Define your queue name
-queue_name = 'my_queue'
+queue_name = 'brontosaurus_queue'
 
 
 def format_brontausorus_data(data: dict):
@@ -34,16 +34,20 @@ def format_other_data(data: dict):
 # Reading data from the queue
 while True:
     # Using BLPOP for blocking pop, replace with LPOP for non-blocking
-    (queue_name, payload) = r.blpop(queue_name, timeout=0)
+    data = r.blpop(queue_name, timeout=2)
 
-    data = json.load(payload)
+    #data = json.load(payload)
 
-    print("The following data has been popped from the redis queue:")
-    print(queue_name, data, sep="\n")
 
-    if queue_name == "brontosaurus_queue":
-        format_brontausorus_data(data)
-    else:
-        format_other_data(data)
+    if data != None:
+        print("The following data has been popped from the redis queue:")
+        print(data)
+
+
+
+    # if queue_name == "brontosaurus_queue":
+    #     format_brontausorus_data(data)
+    # else:
+    #     format_other_data(data)
 
     
