@@ -142,7 +142,7 @@ spec:
   - http:
       paths:
       - pathType: Prefix
-        path: /brontosaurus(/|$)(.*)
+        path: /connector/brontosaurus(/|$)(.*)
         backend:
           service:
             name: webapp

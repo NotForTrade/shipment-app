@@ -1,30 +1,5 @@
-import redis
-import json
-import os
-from pint import UnitRegistry
 import pint
-
-
-
-print("Hello world! This is brontosaurus_queue_worker!")
-
-
-
-# Connect to Redis server
-r = redis.Redis(host=os.environ.get('REDIS_HOST'), port=int(os.environ.get("REDIS_PORT")), decode_responses=True)
-
-
-print("host:", os.environ.get('REDIS_HOST'))
-print("port:" , os.environ.get('REDIS_PORT'))
-
-
-
-# Define your queue name
-queue_name = 'brontosaurus_queue'
-
-
-
-
+from pint import UnitRegistry
 
 # Initialize a unit registry
 ureg = UnitRegistry()
@@ -62,6 +37,7 @@ def auto_convert_units(input_str):
         return input_str
 
 
+
 def normalize_brontausorus(data: dict):
     
     out = dict()
@@ -93,39 +69,20 @@ def normalize_brontausorus(data: dict):
            out[k] = auto_convert_units(v)
 
         except pint.errors.UndefinedUnitError:
-            pass
-            #print("Error with pint", k, v)
+            print("Error with pint", k, v)
         except AttributeError:
-            pass
-            #print("AttributeError", k, v)
+            print("AttributeError", k, v)
 
     return out
 
 
-def format_other_data(data: dict):
-    out = dict()
-    return out
+dic_in = {'Package_ID': 0, 'Package_Weight': '11 lb', 'Package_Volume': '2 m3', 'Emitter': 'Emitter N#841', 'Reciever': 'Reciever N#7242', 'Emitter_Address': '9473 Street of someplace', 'Reciever_Address': '3443 Street of someplace', 'Expedition_Date': '2014-2-11', 'Estimated_Arrival_Date': '2027-1-9', 'Shipment_distance': '2745 mi', 'Perishable': True, 'Valuable': True, 'Strong': False, 'GrndTrsp': False, 'Boat': False, 'Plane': True, 'Shipment_Status': 'completed', 'Color': 'red', 'Package': 'steel'}
 
 
-# Reading data from the queue
-while True:
-    # Using BLPOP for blocking pop, replace with LPOP for non-blocking
-    message = r.blpop(queue_name, timeout=2)
+print(normalize_brontausorus(dic_in))
 
-    if message == None:
-        continue
-    
-    print("The following data has been popped from the redis queue:")
-    print(message)
 
-    data = json.loads(message[1])
 
-    print(data)
-    print(type(data))
 
-    if queue_name == "brontosaurus_queue":
-        normalized_data = normalize_brontausorus(data)
-    else:
-        format_other_data(data)
 
-    
+

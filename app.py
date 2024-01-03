@@ -15,9 +15,9 @@ if redis_host != None and redis_port != None:
 
 
 ## ------------------------------------------------------------------
-## External connector
+## External connectors
 
-@app.route("/brontosaurus", methods=["POST"])
+@app.route("/connector/brontosaurus", methods=["POST"])
 def brontosaurus_push_redis():
     payload = json.dumps(request.json)
 

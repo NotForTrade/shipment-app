@@ -3,7 +3,7 @@ import random
 import time
 import json
 
-url = 'http://127.0.0.1:80/brontosaurus'
+url = 'http://127.0.0.1:80/connector/brontosaurus'
 
 # payload values and unit ranges
 
