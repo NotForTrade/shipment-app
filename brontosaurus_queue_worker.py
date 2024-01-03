@@ -59,7 +59,7 @@ def auto_convert_units(input_str):
         # Convert the quantity to the target unit
         return str(quantity.to(target_unit))
     else:
-        return input_str
+        return str(input_str)
 
 
 def normalize_brontausorus(data: dict):
@@ -89,22 +89,19 @@ def normalize_brontausorus(data: dict):
     for k, v in data.items():
         if not k in key_translation:
             continue
-        try:
-           out[k] = auto_convert_units(v)
-
-        except pint.errors.UndefinedUnitError:
-            pass
-            #print("Error with pint", k, v)
-        except AttributeError:
-            pass
-            #print("AttributeError", k, v)
-
+        new_k = key_translation[k]
+        if type(v) == type(str):
+            try:
+                out[new_k] = auto_convert_units(v)
+            except pint.errors.UndefinedUnitError:
+                out[new_k] = str(v)
+        out[new_k] = str(v)
+        
     return out
 
 
 def format_other_data(data: dict):
-    out = dict()
-    return out
+    return None
 
 
 # Reading data from the queue
@@ -125,7 +122,16 @@ while True:
 
     if queue_name == "brontosaurus_queue":
         normalized_data = normalize_brontausorus(data)
-    else:
-        format_other_data(data)
 
+    else:
+        normalized_data = format_other_data(data)
+
+    if normalized_data != None:
+
+        print('-----------------------------------------')
+        print(normalized_data)
+        print('-----------------------------------------')
+
+
+        r.hset(f"shipment:{normalized_data["Shipment_id"]}", mapping= normalized_data)
     

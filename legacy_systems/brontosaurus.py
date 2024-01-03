@@ -48,10 +48,12 @@ def generate_payload(shipment_number):
 
 
 
+
+
+shipment_number = 0
+
 while True:
-
-    shipment_number = 0
-
+    
     payload = generate_payload(shipment_number)
     print(payload)
 
