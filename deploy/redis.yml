@@ -20,7 +20,7 @@ spec:
     - containerPort: 6379
     resources:
       limits:
-        memory: "1Gi"
+        memory: "2Gi"
 
 ---
 
