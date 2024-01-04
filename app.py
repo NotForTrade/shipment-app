@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, abort
+from flask import Flask, jsonify, render_template, request, abort, Response
 import random
 import json
 import redis
@@ -54,40 +54,53 @@ valid_keys = ['Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient',
               'Includes_Water_Transportation', 'Includes_Ground_Transportation', 
               'Shipment_Status']
 
-def retrieve_data_based_on_keys(shipment_id, keys=None):
-    redis_key = f'shipment:{shipment_id}'
-    data = {}
+# def retrieve_data_based_on_keys(shipment_id, keys=None):
+#     redis_key = f'shipment:{shipment_id}'
+#     data = {}
     
-    if keys:
-        # Filter out invalid keys
-        valid_requested_keys = [key for key in keys if key in valid_keys]
+#     if keys:
+#         # Filter out invalid keys
+#         valid_requested_keys = [key for key in keys if key in valid_keys]
 
-        # Retrieve only specified and valid keys
-        data = {key: r.hget(redis_key, key) for key in valid_requested_keys if r.hexists(redis_key, key)}
-    else:
-        # Retrieve all data for the shipment
-        all_data = r.hgetall(redis_key)
-        # Filter out only valid keys
-        data = {key: all_data[key] for key in all_data if key in valid_keys}
+#         # Retrieve only specified and valid keys
+#         data = {key: r.hget(redis_key, key) for key in valid_requested_keys if r.hexists(redis_key, key)}
+#     else:
+#         # Retrieve all data for the shipment
+#         all_data = r.hgetall(redis_key)
+#         # Filter out only valid keys
+#         data = {key: all_data[key] for key in all_data if key in valid_keys}
 
-    return data
+#     return data
+
+
+# @app.route('/api', methods=['GET'])
+# def api_get():
+#     shipment_id = request.args.get('Shipment_id')
+#     if not shipment_id:
+#         return "Shipment ID is required", 400
+
+#     # Extract keys from query parameters, excluding 'Shipment_id'
+#     requested_keys = [key for key in request.args.keys() if key != 'Shipment_id']
+
+#     # If no specific keys are requested, fetch all data for the shipment
+#     data = retrieve_data_based_on_keys(shipment_id, requested_keys or None)
+
+#     return data, 200
 
 
 @app.route('/api', methods=['GET'])
 def api_get():
-    shipment_id = request.args.get('Shipment_id')
-    if not shipment_id:
-        return "Shipment ID is required", 400
 
-    # Extract keys from query parameters, excluding 'Shipment_id'
-    requested_keys = [key for key in request.args.keys() if key != 'Shipment_id']
-
-    # If no specific keys are requested, fetch all data for the shipment
-    data = retrieve_data_based_on_keys(shipment_id, requested_keys or None)
-
-    return data, 200
+    out = list()
 
 
+    # Collecting the key list of the redis database
+    for key in r.scan_iter("shipment:*"):
+        
+        out.append(r.hgetall(key))
+    
+
+    return out, 200
 
 
 
@@ -194,10 +207,53 @@ def api_post():
         return "An error occurred", 500
 
 
+# @app.route('/api', methods=['PUT'])
+# def api_put():
+
+#     return "1", 200
+
+
 @app.route('/api', methods=['PUT'])
 def api_put():
 
-    return "1", 200
+    app.logger.warning(f"json: {request.json}")
+
+
+    updated_data = request.json
+    if not updated_data:
+        return "No data provided", 400
+
+    if not "Shipment_id" in updated_data:
+        return "Shipment ID is required", 400
+
+    shipment_id = updated_data["Shipment_id"]
+    if not shipment_id:
+        return "There is no value for Shipment_id", 400
+
+
+    # Check if the shipment exists
+    redis_key = f'shipment:{shipment_id}'
+    if not r.exists(redis_key):
+        return "Shipment not found", 404
+
+    # Update the data
+    success = update_shipment_data(shipment_id, updated_data)
+
+    if success:
+        return "Data updated successfully", 200
+    else:
+        return "An error occurred", 500
+
+def update_shipment_data(shipment_id, updated_data):
+    redis_key = f'shipment:{shipment_id}'
+    try:
+        for key, value in updated_data.items():
+            if key in valid_keys:
+                r.hset(redis_key, key, value)
+        return True
+    except Exception as e:
+        app.logger.error(f"Error updating shipment: {e}")
+        return False
 
 
 
@@ -218,6 +274,7 @@ def api_put():
 #     ]
 
 #     return jsonify(data)
+
 
 
 ## ------------------------------------------------------------------

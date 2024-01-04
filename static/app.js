@@ -4,7 +4,23 @@ $(document).ready(function() {
 
     let my_table
 
+    const fields = [
+        'Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient', 
+        'Emitter_Address', 'Recipient_Address', 'Expedition_Date', 
+        'Estimated_Arrival_Date', 'Shipment_distance', 'Perishable', 
+        'High_Value', 'Fragile', 'Includes_Air_Transportation', 
+        'Includes_Water_Transportation', 'Includes_Ground_Transportation', 
+        'Shipment_Status'
+    ];
+
+    function dict_to_values(data){
+        return data.map(shipment => fields.map(key => shipment[key]));
+    };
+
+    
+
     function createOrupdateTable(data){
+        console.info(dict_to_values(data))
         if (my_table == null) {
             my_table = $('#my_table').DataTable(
                 {
@@ -29,18 +45,18 @@ $(document).ready(function() {
                     
                 
                 ],
-                data: data
+                data: dict_to_values(data)
             });
         }
         else{
             my_table.clear()
-            my_table.rows.add(data)
+            my_table.rows.add(dict_to_values(data))
             my_table.draw()
         }
     }
 
     function fetchDataAndUpdateTable() {
-        $.get("/api/shipments", function (data, status) {
+        $.get("/api", function (data, status) {
             //step 1 -> save the retrieved data
             table_data = data
             
