@@ -3,6 +3,9 @@ import random
 import json
 import redis
 import os
+import pint
+from pint import UnitRegistry
+
 
 app = Flask(__name__)
 
@@ -12,6 +15,11 @@ redis_port=int(os.environ.get("REDIS_PORT"))
 
 if redis_host != None and redis_port != None:
     r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+
+
+shipment_id_increment = 0
+
+
 
 
 ## ------------------------------------------------------------------
@@ -84,37 +92,107 @@ def api_get():
 
 
 
+
+
+
+
+
+ureg = UnitRegistry()
+
+# Define a mapping of unit categories to target units
+target_units = {
+    'length': ureg.kilometer,
+    'mass': ureg.kilogram,
+    'volume': ureg.meter**3,
+}
+
+
+
+# Function to automatically convert units based on type
+def auto_convert_units(input_str):
+    # Parse the input string to a Quantity object
+    quantity = ureg.parse_expression(input_str)
+
+    # Determine the unit type and get the target unit
+    unit_type = quantity.units.dimensionality
+    target_unit = None
+    for category, unit in target_units.items():
+        if unit.dimensionality == unit_type:
+            target_unit = unit
+            break
+
+    if target_unit:
+        # Convert the quantity to the target unit
+        return str(quantity.to(target_unit))
+    else:
+        return str(input_str)
+
+
+
+
+
+def check_data_is_normalized(data: dict):
+
+    global valid_keys
+    # Check no key is missing from data
+    app.logger.warning(f"The 2 sets are: {set(data.keys())} {set(valid_keys)}")
+
+
+    if set(data.keys()) != set(valid_keys): # We exclude Shipment_id as we add it
+        return None
+    
+    # Convert the unit of values in data to ensure they're normalized
+    keys_with_unit = {'Weight', 'Volume', 'Shipment_distance'}
+
+    out = dict()
+
+    for k, v in data.items():
+        if not k in keys_with_unit:
+            out[k] = str(v)
+            continue
+        if type(v) == type(str):
+            try:
+                out[k] = auto_convert_units(v)
+            except pint.errors.UndefinedUnitError:
+                out[k] = str(v)
+        out[k] = str(v)
+
+    return out
+
+
+def process_post_data(data):
+
+    global shipment_id_increment
+
+    shipment_id_increment += 1
+    data["Shipment_id"] = shipment_id_increment
+    
+    normalized_data = check_data_is_normalized(data)
+
+    if normalized_data != None:
+        app.logger.warning(f"normalized_data content: {normalized_data}")
+        app.logger.warning(f"Shipment_id value: {normalized_data["Shipment_id"]}")
+        r.hset(f"shipment:{normalized_data["Shipment_id"]}", mapping= normalized_data)
+        result = True
+    else:
+        result = False
+    return result
+
+
 @app.route('/api', methods=['POST'])
 def api_post():
 
-    return "1", 200
-    # valid_keys = ['Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient', 
-    #           'Emitter_Address', 'Recipient_Address', 'Expedition_Date', 
-    #           'Estimated_Arrival_Date', 'Shipment_distance', 'Perishable', 
-    #           'High_Value', 'Fragile', 'Includes_Air_Transportation', 
-    #           'Includes_Water_Transportation', 'Includes_Ground_Transportation', 
-    #           'Shipment_Status']
+    data = request.json  # or request.form for form data
+    if not data:
+        return "No data provided", 400
 
+    success = process_post_data(data)
 
-    # if request.method == 'GET':
-    #     # You'll need a way to identify which shipment's data to fetch
-    #     # For example, you might use a query parameter for the shipment ID
-    #     shipment_id = request.args.get('Shipment_id')
+    if success:
+        return "Data created successfully", 201
+    else:
+        return "An error occurred", 500
 
-    #     if not shipment_id:
-    #         return "Shipment ID is required", 400
-
-    #     requested_keys = request.args.keys()
-
-    #     # Validate the requested keys
-    #     if not all(key in valid_keys for key in requested_keys):
-    #         return "Invalid key in request", 400
-
-    #     # Retrieve and filter data based on the valid requested keys
-    #     data = retrieve_data_based_on_keys(requested_keys, shipment_id)
-
-    #     return data, 200
-    
 
 @app.route('/api', methods=['PUT'])
 def api_put():

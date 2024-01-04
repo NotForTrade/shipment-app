@@ -1,21 +1,38 @@
-dic = {   
-    'Package_ID': 'Shipment_id',
-    'Package_Weight': 'Weight',
-    'Package_Volume': 'Volume',
-    'Emitter': 'Emitter',
-    'Reciever': 'Recipient',
-    'Emitter_Address': 'Emitter_Address',
-    'Reciever_Address': 'Recipient_Address',
-    'Expedition_Date': 'Expedition_Date',
-    'Estimated_Arrival_Date': 'Estimated_Arrival_Date',
-    'Shipment_distance': 'Shipment_distance',
-    'Perishable': 'Perishable',
-    'Valuable': 'High_Value',
-    'Strong': 'Fragile',
-    'Plane': 'Includes_Air_Transportation',
-    'Boat': 'Includes_Water_Transportation',
-    'GrndTrsp': 'Includes_Ground_Transportation',
-    'Shipment_Status': 'Shipment_Status'
+import requests
+import json
+
+def test_post_api(url, data):
+    headers = {'Content-Type': 'application/json'}
+    response = requests.post(url, data=json.dumps(data), headers=headers)
+
+    print(f"Status Code: {response.status_code}")
+    print(f"Response Body: {response.text}")
+
+if __name__ == "__main__":
+    # URL of your API
+    api_url = "http://127.0.0.1:80/api"
+
+    # Sample data payload
+    # Modify this dictionary with the data structure expected by your API
+    sample_data = {
+        "Weight": 869.43,
+        "Volume": 31.44,
+        "Emitter": "Emitter_36",
+        "Recipient": "Recipient_94",
+        "Emitter_Address": "123 Emitter St, City 24",
+        "Recipient_Address": "456 Recipient Ave, City 23",
+        "Expedition_Date": "2024-01-04",
+        "Estimated_Arrival_Date": "2024-01-10",
+        "Shipment_distance": 537.57,
+        "Perishable": True,
+        "High_Value": True,
+        "Fragile": True,
+        "Includes_Air_Transportation": True,
+        "Includes_Water_Transportation": False,
+        "Includes_Ground_Transportation": True,
+        "Shipment_Status": "In Transit"
     }
 
-print(dic.values())
+
+    # Call the function to test POST request
+    test_post_api(api_url, sample_data)
