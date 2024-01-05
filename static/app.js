@@ -5,17 +5,12 @@ $(document).ready(function() {
     let my_table
 
     const fields = [
-        'Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient', 
+        'Shipment_Status', 'Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient', 
         'Emitter_Address', 'Recipient_Address', 'Expedition_Date', 
         'Estimated_Arrival_Date', 'Shipment_distance', 'Perishable', 
         'High_Value', 'Fragile', 'Includes_Air_Transportation', 
-        'Includes_Water_Transportation', 'Includes_Ground_Transportation', 
-        'Shipment_Status'
+        'Includes_Water_Transportation', 'Includes_Ground_Transportation'
     ];
-
-
-
-    
 
     function createOrupdateTable(data){
 

@@ -31,7 +31,7 @@ def post_test():
         "Includes_Air_Transportation": True,
         "Includes_Water_Transportation": False,
         "Includes_Ground_Transportation": True,
-        "Shipment_Status": "Lost"
+        "Shipment_Status": "Pending"
     }
 
 
