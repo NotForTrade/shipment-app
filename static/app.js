@@ -13,7 +13,7 @@ $(document).ready(function() {
         'Shipment_Status'
     ];
 
-    
+
 
     
 
@@ -25,7 +25,6 @@ $(document).ready(function() {
         })
 
 
-        console.info(header)
         if (my_table == null) {
             my_table = $('#my_table').DataTable(
                 {
