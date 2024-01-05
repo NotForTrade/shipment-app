@@ -29,8 +29,23 @@ $(document).ready(function() {
             my_table = $('#my_table').DataTable(
                 {
                 columns: header,
-                data: rows
+                data: rows,
+                columnDefs: [{
+                    targets: fields.indexOf("Shipment_Status"),
+                    createdCell: function(td, cellData, rowData, row, col) {
+                        switch (cellData) {
+                            case "Completed":
+                                $(td).css('background-color', "green").css('color', "White")
+                                break;
+                            default:
+                                $(td).css('background-color', "LightYellow")
+
+                        }
+                    }
+                }
+                ]
             });
+
         }
         else{
             my_table.clear()

@@ -16,7 +16,7 @@ def post_test():
     # Sample data payload
     # Modify this dictionary with the data structure expected by your API
     sample_data = {
-        "Weight": 869.43,
+        "Weight": 30,
         "Volume": 31.44,
         "Emitter": "Emitter_36",
         "Recipient": "Recipient_94",
@@ -31,7 +31,7 @@ def post_test():
         "Includes_Air_Transportation": True,
         "Includes_Water_Transportation": False,
         "Includes_Ground_Transportation": True,
-        "Shipment_Status": "In Transit"
+        "Shipment_Status": "Lost"
     }
 
 
@@ -51,14 +51,8 @@ def test_put_api(url, data):
 
 if __name__ == "__main__":
 
-    # # URL of your API
-    # url = "http://127.0.0.1:80/api"
+    
 
-    # headers = {'Content-Type': 'application/json'}
-    # response = requests.get(url, headers=headers)
-
-    # print(f"Status Code: {response.status_code}")
-    # print(f"Response Body: {response.text}")
 
     post_test()
 
