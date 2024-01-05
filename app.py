@@ -12,8 +12,8 @@ from redis.commands.search.field import TextField, NumericField, TagField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import NumericFilter, Query
 
-
-
+import time
+import datetime
 
 app = Flask(__name__)
 
@@ -23,6 +23,14 @@ redis_port=int(os.environ.get("REDIS_PORT"))
 
 if redis_host != None and redis_port != None:
     r = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+
+
+
+SHIPMENT_COUNTER = "SHIPMENT_COUNTER"
+
+
+
+
 
 
 shipment_id_increment = 0
@@ -113,8 +121,74 @@ def api_get():
 
 
 
+@app.route('/api/shipping-event', methods=['POST'])
+def api_post_shipping_event():
+
+    data = request.json
+    
+    shipment_id = data["shipping_id"]
+    event_type = data["event_type"]
+    timestamp = time.time()
+    shipping_partner_id = data["shipping_partner_id"]
+    
+    match event_type:
+        case "DEPOSIT":
+            pass
+        case "IN_TRANSIT":
+            pass
+        case "PARCEL_CENTER":
+            pass
+        case "SUBMITTED_TO_CUSTOMS":
+            pass
+        case "RECIEVED_BY_CUSTOMS":
+            pass
+        case "FINAL_DELIVERY":
+            pass
+        case "DELIVER":
+            pass
+        case "BROKEN":
+            pass
+        case "LOST":
+            pass
+
+    return "ok", 200
 
 
+@app.route('/api/new-shipment', methods=['POST'])
+def api_post_new_shipment():
+
+    data_in = request.json
+
+    out ={
+
+        "sender_name": data_in["sender_name"], #str()
+        "sender_address": data_in["sender_address"], #str()
+        "recipient_name": data_in["recipient_name"], #str()
+        "recipient_address": data_in["recipient_address"], #str()
+        "creation_time": time.time(),
+        "desired_delivery_date": data_in["desired_delivery_date"], #datetime.date()
+        "weight": data_in["weight"], #int()
+        "volume": data_in["volume"], #int()
+        "perishable": data_in["perishable"], #datetime.date() | None
+        "high_value": data_in["high_value"], #int() | None
+        "fragile": data_in["fragile"], #bool()
+        "event_history": []
+    }
+
+    global SHIPMENT_COUNTER
+
+    # Increment the key value
+    r.incr(SHIPMENT_COUNTER)
+
+    # Set the shipment id to the current counter set on redis
+    shipment_id = f"shipment:{r.get(SHIPMENT_COUNTER)}"
+
+    # app.logger.warning(f"out content: {out}")
+    # app.logger.warning(f"Shipment_id value: {normalized_data["Shipment_id"]}")
+    
+    r.set(shipment_id, value=json.dumps(out))
+
+    return f"Data created successfully: \n{out}", 201
 
 
 
