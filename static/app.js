@@ -13,44 +13,29 @@ $(document).ready(function() {
         'Shipment_Status'
     ];
 
-    function dict_to_values(data){
-        return data.map(shipment => fields.map(key => shipment[key]));
-    };
+    
 
     
 
     function createOrupdateTable(data){
-        console.info(dict_to_values(data))
+
+        const rows = data.map(shipment => fields.map(key => shipment[key]));
+        const header = fields.map(function(key) {
+            return { title: key }
+        })
+
+
+        console.info(header)
         if (my_table == null) {
             my_table = $('#my_table').DataTable(
                 {
-                columns: [
-                    { title: 'Shipment_id' },
-                    { title: 'Weight' },
-                    { title: 'Volume' },
-                    { title: 'Emitter' },
-                    { title: 'Recipient' },
-                    { title: 'Emitter_Address' },
-                    { title: 'Recipient_Address' },
-                    { title: 'Expedition_Date' },
-                    { title: 'Estimated_Arrival_Date' },
-                    { title: 'Shipment_distance' },
-                    { title: 'Perishable' },
-                    { title: 'High_Value' },
-                    { title: 'Fragile' },          
-                    { title: 'Includes_Air_Transportation' },
-                    { title: 'Includes_Water_Transportation' },
-                    { title: 'Includes_Ground_Transportation' },
-                    { title: 'Shipment_Status' }
-                    
-                
-                ],
-                data: dict_to_values(data)
+                columns: header,
+                data: rows
             });
         }
         else{
             my_table.clear()
-            my_table.rows.add(dict_to_values(data))
+            my_table.rows.add(rows)
             my_table.draw()
         }
     }
