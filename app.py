@@ -108,12 +108,11 @@ valid_keys = ['Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient',
 def api_get():
 
     out = list()
-
-
+    
     # Collecting the key list of the redis database
     for key in r.scan_iter("shipment:*"):
         
-        out.append(r.hgetall(key))
+        out.append(r.get(key))
     
 
     return out, 200
@@ -124,34 +123,73 @@ def api_get():
 @app.route('/api/shipping-event', methods=['POST'])
 def api_post_shipping_event():
 
-    data = request.json
+    payload = request.json
     
-    shipment_id = data["shipping_id"]
-    event_type = data["event_type"]
-    timestamp = time.time()
-    shipping_partner_id = data["shipping_partner_id"]
-    
+    shipment_id = payload["shipment_id"]
+
+
+    try:
+        raw_data = r.get(shipment_id)
+        
+        data = json.loads(raw_data)
+    except Exception as e:
+        return f"Internal error: {e}", 500
+
+    event_type = payload["event_type"]
     match event_type:
         case "DEPOSIT":
-            pass
+            shipment_status = "AT PARCEL CENTER"
+            
         case "IN_TRANSIT":
-            pass
+            shipment_status = "IN TRANSIT"
+            data["expedition_date"] = str(datetime.datetime.fromtimestamp(time.time()))
+            
         case "PARCEL_CENTER":
-            pass
-        case "SUBMITTED_TO_CUSTOMS":
-            pass
-        case "RECIEVED_BY_CUSTOMS":
-            pass
-        case "FINAL_DELIVERY":
-            pass
-        case "DELIVER":
-            pass
-        case "BROKEN":
-            pass
-        case "LOST":
-            pass
+            shipment_status = "AT PARCEL CENTER"
 
-    return "ok", 200
+        case "SUBMITTED_TO_CUSTOMS":
+            shipment_status = "UNDERGOING INSPECTION"
+
+        case "RECIEVED_BY_CUSTOMS":
+            shipment_status = "CLEARED BY CUSTOMS"
+
+        case "FINAL_DELIVERY":
+            shipment_status = "IN TRANSIT"
+
+        case "DELIVER":
+            shipment_status = "COMPLETED"
+            
+        case "BROKEN":
+            shipment_status = "FAILED - DAMAGED"
+
+        case "LOST":
+            shipment_status = "FAILED - LOST"
+
+    
+    new_event = dict(
+        datetime=str(datetime.datetime.fromtimestamp(time.time())),
+        shipment_status=shipment_status,
+        shipping_partner_id=payload["shipping_partner_id"]
+    )
+    
+    
+    try:
+        
+        # Check if the shipment is too late
+        # perishable = data["perishable"]
+
+        data["shipment_status"] = shipment_status
+        data["event_history"].append(new_event)
+
+        app.logger.warning(f"New data: {data}")
+
+        r.set(shipment_id, value=json.dumps(data))
+
+        return "ok", 200
+
+    except Exception as e:
+
+        return f"An internal error occured: {e}", 500
 
 
 @app.route('/api/new-shipment', methods=['POST'])
@@ -160,12 +198,13 @@ def api_post_new_shipment():
     data_in = request.json
 
     out ={
-
+        "shipment_status": "ACKNOWLEDGED",
         "sender_name": data_in["sender_name"], #str()
         "sender_address": data_in["sender_address"], #str()
         "recipient_name": data_in["recipient_name"], #str()
         "recipient_address": data_in["recipient_address"], #str()
-        "creation_time": time.time(),
+        "creation_time": str(datetime.datetime.fromtimestamp(time.time())),
+        "expedition_date": "-",
         "desired_delivery_date": data_in["desired_delivery_date"], #datetime.date()
         "weight": data_in["weight"], #int()
         "volume": data_in["volume"], #int()

@@ -1,20 +1,25 @@
 $(document).ready(function() {
 
     let table_data = []
-
     let my_table
 
     const fields = [
-        'Shipment_Status', 'Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient', 
-        'Emitter_Address', 'Recipient_Address', 'Expedition_Date', 
-        'Estimated_Arrival_Date', 'Shipment_distance', 'Perishable', 
-        'High_Value', 'Fragile', 'Includes_Air_Transportation', 
-        'Includes_Water_Transportation', 'Includes_Ground_Transportation'
+        'shipment_status', 'weight', 'volume', 'sender_name', 'sender_address',
+        'recipient_name', 'recipient_address', 'expedition_date', 
+        'desired_delivery_date', 'perishable', 
+        'high_value', 'fragile'
     ];
 
     function createOrupdateTable(data){
 
-        const rows = data.map(shipment => fields.map(key => shipment[key]));
+        //const rows = data.map(shipment => fields.map(key => shipment[key]));
+
+        let rows = Object.keys(data).map(key => 
+            fields.map(field => JSON.parse(data[key])[field] || "")
+        );
+
+
+
         const header = fields.map(function(key) {
             return { title: key }
         })
@@ -26,7 +31,7 @@ $(document).ready(function() {
                 columns: header,
                 data: rows,
                 columnDefs: [{
-                    targets: fields.indexOf("Shipment_Status"),
+                    targets: fields.indexOf("shipment_status"),
                     createdCell: function(td, cellData, rowData, row, col) {
                         switch (cellData) {
                             case "Completed":
