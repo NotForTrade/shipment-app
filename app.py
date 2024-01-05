@@ -112,7 +112,9 @@ def api_get():
     # Collecting the key list of the redis database
     for key in r.scan_iter("shipment:*"):
         
-        out.append(r.get(key))
+        row = json.loads(r.get(key))
+        row["shipment_id"] = key
+        out.append(row)
     
 
     return out, 200

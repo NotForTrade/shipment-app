@@ -7,7 +7,7 @@ $(document).ready(function() {
         'shipment_status', 'weight', 'volume', 'sender_name', 'sender_address',
         'recipient_name', 'recipient_address', 'expedition_date', 
         'desired_delivery_date', 'perishable', 
-        'high_value', 'fragile'
+        'high_value', 'fragile', 'shipment_id'
     ];
 
     function createOrupdateTable(data){
@@ -15,7 +15,7 @@ $(document).ready(function() {
         //const rows = data.map(shipment => fields.map(key => shipment[key]));
 
         let rows = Object.keys(data).map(key => 
-            fields.map(field => JSON.parse(data[key])[field] || "")
+            fields.map(field => data[key][field] || "")
         );
 
 
@@ -50,7 +50,7 @@ $(document).ready(function() {
         else{
             my_table.clear()
             my_table.rows.add(rows)
-            my_table.draw()
+            my_table.draw(false)
         }
     }
 
