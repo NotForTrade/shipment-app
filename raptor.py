@@ -48,15 +48,68 @@ def post_new_shipment():
 
     return response.text
 
-def get_shipment_by_id():
+def get_shipments():
 
-    url = 'http://api:5000/api/RAPTOR'
+    # url = 'http://api:5000/api/shipments?partner=RAPTOR'
+
+    url = 'http://127.0.0.1/api/shipments?partner=RAPTOR'
+
+    response = requests.get(url)
+
+    return response.json()
+
+
+def post_shipping_event():
+    
+    data = get_shipments()
+    
+    row = data[0]
+
+    shipment_status = row["shipment_status"]
+
+    match shipment_status:
+
+        case "ACKNOWLEDGED":
+            event = "DEPOSIT"
+
+
+        case "AT LOCAL PARCEL":
+            event = "IN_TRANSIT"
+            event = "FINAL_DELIVERY"
+
+
+        case "IN TRANSIT":
+            event = "PARCEL_CENTER"
+
+            
+        case "AT PARCEL CENTER":
+            event = "IN_TRANSIT"
+            event = "SUBMITTED_TO_CUSTOMS"
 
 
 
 
+        case "UNDERGOING INSPECTION":
+            event = "RECIEVED_BY_CUSTOMS"
 
-    return True
+        case "CLEARED BY CUSTOMS":
+            event = "FINAL_DELIVERY"
+
+        case "APPROACHING DESTINATION":
+            event = "DELIVER"
+
+        case "COMPLETED":
+            pass
+            
+        case "BROKEN":
+            pass
+
+        case "LOST":
+            pass
+
+
+
+    return data
 
 
 
@@ -66,7 +119,10 @@ if __name__ == '__main__':
 
 
     while True:
-        print(post_new_shipment())
+        # print(post_new_shipment())
+
+        post_shipping_event()
+
 
         time.sleep(random.randint(2, 5))
 

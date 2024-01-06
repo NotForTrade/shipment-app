@@ -118,8 +118,8 @@ def api_post_shipping_event():
     except Exception as e:
         return f"Internal error: {e}", 500
 
-    event_type = payload["event_type"]
-    match event_type:
+    event = payload["event"]
+    match event:
         case "DEPOSIT":
             shipment_status = "AT LOCAL PARCEL"
             
