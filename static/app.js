@@ -34,11 +34,38 @@ $(document).ready(function() {
                     targets: fields.indexOf("shipment_status"),
                     createdCell: function(td, cellData, rowData, row, col) {
                         switch (cellData) {
-                            case "Completed":
-                                $(td).css('background-color', "green").css('color', "White")
+                            case "ACKNOWLEDGED":
+                                $(td).css('background-color', "lightYellow").css('color', "Black")
+                                break;
+                            case "AT LOCAL PARCEL":
+                                $(td).css('background-color', "lightGreen").css('color', "Black")
+                                break;
+                            case "IN TRANSIT":
+                                $(td).css('background-color', "lightGreen").css('color', "Black")
+                                break;
+                            case "AT PARCEL CENTER":
+                                $(td).css('background-color', "lightBlue").css('color', "Black")
+                                break;
+                            case "UNDERGOING INSPECTION":
+                                $(td).css('background-color', "lightBlue").css('color', "Black")
+                                break;
+                            case "CLEARED BY CUSTOMS":
+                                $(td).css('background-color', "lightBlue").css('color', "Black")
+                                break;
+                            case "APPROACHING DESTINATION":
+                                $(td).css('background-color', "lightGreen").css('color', "Black")
+                                break;
+                            case "COMPLETED":
+                                $(td).css('background-color', "darkGreen").css('color', "White")
+                                break;
+                            case "FAILED - DAMAGED":
+                                $(td).css('background-color', "darkRed").css('color', "White")
+                                break;
+                            case "FAILED - LOST":
+                                $(td).css('background-color', "darkRed").css('color', "White")
                                 break;
                             default:
-                                $(td).css('background-color', "LightYellow")
+                                $(td).css('background-color', "lightYellow")
 
                         }
                     }

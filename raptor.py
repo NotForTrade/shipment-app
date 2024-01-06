@@ -35,8 +35,8 @@ def post_new_shipment():
     "recipient_name": f"{random.choice(word_dataset["names"])} {random.choice(word_dataset["last_names"])}",
     "recipient_address": f"{random.randint(1, 99)} {random.choice(word_dataset["street_suffixes"])} {random.choice(word_dataset["street_names"])}, {random.choice(word_dataset["cities"])}, {random.choice(word_dataset["countries"])}",
     "desired_delivery_date": f"{random.randint(2025, 2030)}-{random.randint(1, 12)}-{random.randint(1, 31)}",
-    "weight": str({random.randint(1, 1000)}),
-    "volume": str({random.randint(1, 1000)}),
+    "weight": str(random.randint(1, 1000)),
+    "volume": str(random.randint(1, 1000)),
     "perishable": random.choice(["True", "False"]),
     "high_value": value,
     "fragile": random.choice(["True", "False"])

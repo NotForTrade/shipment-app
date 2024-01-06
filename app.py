@@ -107,7 +107,7 @@ def api_post_shipping_event():
     event_type = payload["event_type"]
     match event_type:
         case "DEPOSIT":
-            shipment_status = "AT PARCEL CENTER"
+            shipment_status = "AT LOCAL PARCEL"
             
         case "IN_TRANSIT":
             shipment_status = "IN TRANSIT"
@@ -123,7 +123,7 @@ def api_post_shipping_event():
             shipment_status = "CLEARED BY CUSTOMS"
 
         case "FINAL_DELIVERY":
-            shipment_status = "IN TRANSIT"
+            shipment_status = "APPROACHING DESTINATION"
 
         case "DELIVER":
             shipment_status = "COMPLETED"
