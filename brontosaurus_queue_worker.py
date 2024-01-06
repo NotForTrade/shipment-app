@@ -9,6 +9,7 @@ import requests
 print("Hello world! This is brontosaurus_queue_worker!")
 
 
+url = 'http://webapp:5000/api/brontosaurus/new-shipment'
 
 # Connect to Redis server
 r = redis.Redis(host=os.environ.get('REDIS_HOST'), port=int(os.environ.get("REDIS_PORT")), decode_responses=True)
@@ -62,28 +63,23 @@ def auto_convert_units(input_str):
         return str(input_str)
 
 
-def normalize_brontausorus(data: dict):
+def normalize_brontosaurus(data: dict):
     
     out = dict()
 
     key_translation = {
-        'Package_ID': 'Shipment_id',
-        'Package_Weight': 'Weight',
-        'Package_Volume': 'Volume',
-        'Emitter': 'Emitter',
-        'Reciever': 'Recipient',
-        'Emitter_Address': 'Emitter_Address',
-        'Reciever_Address': 'Recipient_Address',
-        'Expedition_Date': 'Expedition_Date',
-        'Estimated_Arrival_Date': 'Estimated_Arrival_Date',
-        'Shipment_distance': 'Shipment_distance',
-        'Perishable': 'Perishable',
-        'Valuable': 'High_Value',
-        'Strong': 'Fragile',
-        'Plane': 'Includes_Air_Transportation',
-        'Boat': 'Includes_Water_Transportation',
-        'GrndTrsp': 'Includes_Ground_Transportation',
-        'Shipment_Status': 'Shipment_Status'
+        "Emitter": "sender_name",
+        "Sender_Address": "sender_address",
+        "Reciever_Name": "recipient_name",
+        "Recipient_Address": "recipient_address",
+        'Expedition_Date': "expedition_date",
+        "Wanted_Delivery_Date": "desired_delivery_date",
+        "Package_Weight": "weight",
+        "Package_Volume": "volume",
+        "Perishable": "perishable",
+        "Valuable": "high_value",
+        "Strong": "fragile",
+        "Shipment_Status": "shipment_status"
         }
 
     for k, v in data.items():
@@ -96,7 +92,23 @@ def normalize_brontausorus(data: dict):
             except pint.errors.UndefinedUnitError:
                 out[new_k] = str(v)
         out[new_k] = str(v)
-        
+    
+    try:
+        if out["fragile"] == "True":
+            out["fragile"] = "False"
+        else:
+            out["fragile"] = "True"
+
+        out["brontosaurus Shipment_ID:"] = data["Shipment_ID"]
+
+    except Exception as e:
+        print(e)
+
+    out["system_origin"] = "brontosaurus"
+
+
+    # print(out)
+
     return out
 
 
@@ -109,31 +121,24 @@ while True:
     # Using BLPOP for blocking pop, replace with LPOP for non-blocking
     message = r.blpop(queue_name, timeout=2)
 
+
     if message == None:
         continue
-    
-    print("The following data has been popped from the redis queue:")
-    print(message)
 
     data = json.loads(message[1])
 
-    print(data)
-    print(type(data))
-
     if queue_name == "brontosaurus_queue":
-        normalized_data = normalize_brontausorus(data)
+        normalized_data = normalize_brontosaurus(data)
 
     else:
         normalized_data = format_other_data(data)
 
     if normalized_data != None:
 
-        # print('-----------------------------------------')
-        # print(normalized_data)
-        # print('-----------------------------------------')
+        print("Print before doing the http request!!!")
+        response = requests.post(url, json=normalized_data)
+    
+        print('---------------------------------------------------------------------')
+        print(f"HTTP Response: {response.text}")
 
-
-        # utiliser requests 
-
-
-        r.hset(f"shipment:{normalized_data["Shipment_id"]}", mapping= normalized_data)
+        #r.hset(f"shipment:{normalized_data["Shipment_id"]}", mapping= normalized_data)

@@ -70,39 +70,6 @@ valid_keys = ['Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient',
               'Includes_Water_Transportation', 'Includes_Ground_Transportation', 
               'Shipment_Status']
 
-# def retrieve_data_based_on_keys(shipment_id, keys=None):
-#     redis_key = f'shipment:{shipment_id}'
-#     data = {}
-    
-#     if keys:
-#         # Filter out invalid keys
-#         valid_requested_keys = [key for key in keys if key in valid_keys]
-
-#         # Retrieve only specified and valid keys
-#         data = {key: r.hget(redis_key, key) for key in valid_requested_keys if r.hexists(redis_key, key)}
-#     else:
-#         # Retrieve all data for the shipment
-#         all_data = r.hgetall(redis_key)
-#         # Filter out only valid keys
-#         data = {key: all_data[key] for key in all_data if key in valid_keys}
-
-#     return data
-
-
-# @app.route('/api', methods=['GET'])
-# def api_get():
-#     shipment_id = request.args.get('Shipment_id')
-#     if not shipment_id:
-#         return "Shipment ID is required", 400
-
-#     # Extract keys from query parameters, excluding 'Shipment_id'
-#     requested_keys = [key for key in request.args.keys() if key != 'Shipment_id']
-
-#     # If no specific keys are requested, fetch all data for the shipment
-#     data = retrieve_data_based_on_keys(shipment_id, requested_keys or None)
-
-#     return data, 200
-
 
 @app.route('/api', methods=['GET'])
 def api_get():
@@ -192,6 +159,35 @@ def api_post_shipping_event():
     except Exception as e:
 
         return f"An internal error occured: {e}", 500
+
+
+@app.route('/api/brontosaurus/new-shipment', methods=['POST'])
+def api_post_brontosaurus_new_shipment():
+
+
+    out = request.json
+
+
+    app.logger.warning(f"OUT: {out}")
+
+
+    global SHIPMENT_COUNTER
+
+    # Increment the key value
+    r.incr(SHIPMENT_COUNTER)
+
+    # Set the shipment id to the current counter set on redis
+    shipment_id = f"shipment:{r.get(SHIPMENT_COUNTER)}"
+
+    # app.logger.warning(f"out content: {out}")
+    # app.logger.warning(f"Shipment_id value: {normalized_data["Shipment_id"]}")
+    try:
+        r.set(shipment_id, value=json.dumps(out))
+    except Exception as e:
+        app.logger.error(e)
+        abort(500)
+
+    return f"Data created successfully: \n{out}", 201
 
 
 @app.route('/api/new-shipment', methods=['POST'])

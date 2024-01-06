@@ -6,44 +6,40 @@ import json
 url = 'http://127.0.0.1:80/connector/brontosaurus'
 
 # payload values and unit ranges
-
-
-weight_units = ["kg", "g", "lb", "oz"]
-volume_units = ["L", "m3", "gallon"]
 distance_units = ["km", "m", "mi"]
-status = ["pending", "completed", "aborted", "ongoing"]
 colors = ["blue", "red", "yellow", "pink", "brown", "black", "white"]
 package_materials = ["cardboard", "steel", "wood", "plastic"]
-
+status= ["IN TRANSIT", "AT PARCEL CENTER", "UNDERGOING INSPECTION",
+         "CLEARED BY CUSTOMS", "COMPLETED", "FAILED"]
 
 def generate_payload(shipment_number):
     
-
+    high_value = random.choice([True, False])
+    if high_value:
+        value = str(random.randint(500, 1000000))
+    else:
+        value = ""
 
     out = {
-        "Package_ID": shipment_number,
-        "Package_Weight": f"{random.randint(1,15)} {random.choice(weight_units)}",
-        "Package_Volume": f"{random.randint(1,5)} {random.choice(volume_units)}",
-        "Emitter": f"Emitter N#{random.randint(0,9999)}",
-        "Reciever": f"Reciever N#{random.randint(0,9999)}",
-        "Emitter_Address": f"{random.randint(0, 9999)} Street of someplace",
-        "Reciever_Address": f"{random.randint(0, 9999)} Street of someplace",
-        "Expedition_Date": f"{random.randint(2000, 2023)}-{random.randint(0,12)}-{random.randint(0,31)}",
-        "Estimated_Arrival_Date": f"{random.randint(2024, 2035)}-{random.randint(0,12)}-{random.randint(0,31)}",
+        "Shipment_ID": f"P0{shipment_number}",
+        "Emitter": f"Brontosaurus_emitter_{random.randint(0, 9999)}",
+        "Sender_Address": "---",
+        "Reciever_Name": f"Brontosaurus_reciever_{random.randint(0, 9999)}",
+        "Recipient_Address": "---",
+        'Expedition_Date': f"{random.randint(2012, 2023)}-{random.randint(0,12)}-{random.randint(0,31)}",
+        "Wanted_Delivery_Date": f"{random.randint(2024, 2035)}-{random.randint(0,12)}-{random.randint(0,31)}",
+        "Package_Weight": f"{random.randint(1,100)}",
+        "Package_Volume": f"{random.randint(1, 10)}",
+        "Perishable": str(random.choice([True, False])),
+        "Valuable": value,
+        "Strong": str(random.choice([True, False])),
         "Shipment_distance": f"{random.randint(0, 9000)} {random.choice(distance_units)}",
-        "Perishable": random.choice([True, False]),
-        "Valuable": random.choice([True, False]),
-        "Strong": random.choice([True, False]),
-        "GrndTrsp": random.choice([True, False]),
-        "Boat": random.choice([True, False]),
-        "Plane": random.choice([True, False]),
         "Shipment_Status": random.choice(status)
-    }
+        }
     if random.choice([True, False]):
         out.update([("Color", random.choice(colors))])
     if random.choice([True, False]):
         out.update([("Package", random.choice(package_materials))])
-
     return out
 
 
@@ -59,7 +55,7 @@ while True:
 
 
     try:
-        response = requests.post(url, json=payload)  # Use requests.get() for GET requests
+        response = requests.post(url, json=payload)
         print(f"Sent request. Status code:{response.status_code}")
 
 
