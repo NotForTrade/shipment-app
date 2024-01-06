@@ -119,6 +119,21 @@ spec:
 
 ---
 
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: api
+  namespace: shipment-app
+spec:
+  selector:
+    app: shipment-app
+  ports:
+  # Default port used by the image
+  - port: 5000
+
+---
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -155,7 +170,7 @@ spec:
         path: /api(/|$)(.*)
         backend:
           service:
-            name: webapp
+            name: api
             port:
               number: 5000
 

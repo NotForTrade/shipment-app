@@ -20,7 +20,7 @@ with open("raptor.json") as f:
 def post_new_shipment():
 
     # POST URL
-    url = 'http://webapp:5000/api/new-shipment'
+    url = 'http://api:5000/api/new-shipment'
 
     # Generate a random value
     if random.choice([True, False]):
