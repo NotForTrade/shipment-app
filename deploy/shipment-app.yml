@@ -70,6 +70,37 @@ spec:
         - name: PYTHONUNBUFFERED
           value: "1"
 
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: raptor
+  namespace: shipment-app
+  labels:
+    app: raptor
+spec:
+  #replicas: 3
+  selector:
+    matchLabels:
+      app: raptor
+  template:
+    metadata:
+      labels:
+        app: raptor
+    spec:
+      containers:
+      - name: worker
+        image: shipment-app:latest
+        command: ["python"]
+        args: ["raptor.py"]
+        imagePullPolicy: Never  # kind can't find the local image without this parameter
+        ports:
+        - containerPort: 5000
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+
 
 
 ---
