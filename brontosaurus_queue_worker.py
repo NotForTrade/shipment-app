@@ -104,7 +104,7 @@ def normalize_brontosaurus(data: dict):
     except Exception as e:
         print(e)
 
-    out["system_origin"] = "brontosaurus"
+    out["partner"] = "BRONTOSAURUS"
 
 
     # print(out)

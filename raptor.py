@@ -39,13 +39,27 @@ def post_new_shipment():
     "volume": str(random.randint(1, 1000)),
     "perishable": random.choice(["True", "False"]),
     "high_value": value,
-    "fragile": random.choice(["True", "False"])
+    "fragile": random.choice(["True", "False"]),
+    "partner": "RAPTOR"
     }
 
 
     response = requests.post(url, json=data)
 
     return response.text
+
+def get_shipment_by_id():
+
+    url = 'http://api:5000/api/RAPTOR'
+
+
+
+
+
+    return True
+
+
+
 
     
 if __name__ == '__main__':

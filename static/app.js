@@ -82,7 +82,7 @@ $(document).ready(function() {
     }
 
     function fetchDataAndUpdateTable() {
-        $.get("/api", function (data, status) {
+        $.get("/api/shipments", function (data, status) {
             //step 1 -> save the retrieved data
             table_data = data
             

@@ -71,21 +71,35 @@ valid_keys = ['Shipment_id', 'Weight', 'Volume', 'Emitter', 'Recipient',
               'Shipment_Status']
 
 
-@app.route('/api', methods=['GET'])
-def api_get():
+@app.route('/api/shipments', methods=['GET'])
+def api_get_shipments():
 
+    args = request.args
     out = list()
-    
     # Collecting the key list of the redis database
     for key in r.scan_iter("shipment:*"):
-        
         row = json.loads(r.get(key))
         row["shipment_id"] = key
-        out.append(row)
-    
-
+        if "partner" in args:
+            if row["partner"] == args["partner"]:
+                out.append(row)        
+        else:
+            out.append(row)
     return out, 200
 
+
+@app.route('/api/shipment/<shipment_id>', methods=['GET'])
+def api_get_shipment(shipment_id):
+    # Retrieve the shipment data from Redis
+    shipment_data = r.get(shipment_id)
+    if shipment_data is None:
+        return jsonify({"error": "Shipment not found"}), 404
+
+    # Deserialize the JSON string into a Python dictionary
+    row = json.loads(shipment_data)
+
+    # Return the shipment data
+    return jsonify(row), 200
 
 
 
@@ -209,6 +223,7 @@ def api_post_new_shipment():
         "perishable": data_in["perishable"], #datetime.date() | None
         "high_value": data_in["high_value"], #int() | None
         "fragile": data_in["fragile"], #bool()
+        "partner": data_in["partner"],
         "event_history": []
     }
 
