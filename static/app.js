@@ -37,9 +37,6 @@ $(document).ready(function() {
                             case "ACKNOWLEDGED":
                                 $(td).css('background-color', "lightYellow").css('color', "Black")
                                 break;
-                            case "AT LOCAL PARCEL":
-                                $(td).css('background-color', "lightGreen").css('color', "Black")
-                                break;
                             case "IN TRANSIT":
                                 $(td).css('background-color', "lightGreen").css('color', "Black")
                                 break;
@@ -47,9 +44,6 @@ $(document).ready(function() {
                                 $(td).css('background-color', "lightBlue").css('color', "Black")
                                 break;
                             case "UNDERGOING INSPECTION":
-                                $(td).css('background-color', "lightBlue").css('color', "Black")
-                                break;
-                            case "CLEARED BY CUSTOMS":
                                 $(td).css('background-color', "lightBlue").css('color', "Black")
                                 break;
                             case "APPROACHING DESTINATION":
@@ -65,7 +59,7 @@ $(document).ready(function() {
                                 $(td).css('background-color', "darkRed").css('color', "White")
                                 break;
                             default:
-                                $(td).css('background-color', "lightYellow")
+                                $(td).css('background-color', "grey")
 
                         }
                     }

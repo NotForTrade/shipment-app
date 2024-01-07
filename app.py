@@ -76,15 +76,12 @@ shipping_event_model = api.model('ShippingEvent', {
     'shipment_id': fields.String(required=True, description='''With N being an integer, the shipment_id is in the following format:\n
     shipment:N\n''', example='shipment:1'),
     'event': fields.String(required=True, description='''Event occuring during the delivery of the shipment.\nThe valid events are:\n
-    DEPOSIT
-    IN_TRANSIT
+    PICKED_UP
     PARCEL_CENTER
-    SUBMITTED_TO_CUSTOMS
-    RECIEVED_BY_CUSTOMS
-    FINAL_DELIVERY
-    DELIVER
-    BROKEN
-    LOST''', example='DEPOSIT'),
+    CUSTOMS
+    DELIVERED
+    DAMAGED
+    LOST''', example='PICKED_UP'),
     'shipping_partner_id': fields.String(required=True, description='''An identifier from the shipment partner that pushed the update of the shipment.\nExamples:\n
     UPS
     Customs of France frontier
@@ -155,21 +152,15 @@ class ShippingEvent(Resource):
             data = json.loads(raw_data)
             event = payload["event"]
             match event:
-                case "DEPOSIT":
-                    shipment_status = "AT LOCAL PARCEL"
                 case "IN_TRANSIT":
                     shipment_status = "IN TRANSIT"
                 case "PARCEL_CENTER":
                     shipment_status = "AT PARCEL CENTER"
-                case "SUBMITTED_TO_CUSTOMS":
+                case "CUSTOMS":
                     shipment_status = "UNDERGOING INSPECTION"
-                case "RECIEVED_BY_CUSTOMS":
-                    shipment_status = "CLEARED BY CUSTOMS"
-                case "FINAL_DELIVERY":
-                    shipment_status = "APPROACHING DESTINATION"
-                case "DELIVER":
+                case "DELIVERED":
                     shipment_status = "COMPLETED"
-                case "BROKEN":
+                case "DAMAGED":
                     shipment_status = "FAILED - DAMAGED"
                 case "LOST":
                     shipment_status = "FAILED - LOST"

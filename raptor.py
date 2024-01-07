@@ -74,14 +74,13 @@ def post_shipping_event():
 
 
         case "AT LOCAL PARCEL":
-            event = "IN_TRANSIT"
-            event = "FINAL_DELIVERY"
-
+            event = "PICKED_UP"
+            
 
         case "IN TRANSIT":
             event = "PARCEL_CENTER"
 
-            
+
         case "AT PARCEL CENTER":
             event = "IN_TRANSIT"
             event = "SUBMITTED_TO_CUSTOMS"
