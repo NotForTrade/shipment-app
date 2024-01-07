@@ -10,6 +10,8 @@ kubectl apply -f deploy/shipment-app.yml
 
 kubectl -n shipment-app rollout restart deploy/shipment-app-deployment
 
+kubectl -n shipment-app rollout restart deploy/shipment-event-worker
+
 kubectl -n shipment-app rollout restart deploy/brontosaurus-pop
 
 kubectl -n shipment-app rollout restart deploy/raptor

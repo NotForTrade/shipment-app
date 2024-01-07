@@ -58,7 +58,7 @@ def brontosaurus_push_redis():
 
     queue = "brontosaurus_queue"
 
-    app.logger.warning(f"The following data has been pushed to the redis queue: queue: {queue} payload: {payload}")
+    app.logger.warning(f"The following data has it going to be pushed to the redis queue: queue: {queue} payload: {payload}")
 
     try:
         r.rpush(queue, payload)
@@ -122,7 +122,7 @@ class ShipmentList(Resource):
                 row["shipment_id"] = key
                 if "partner" in args:
                     if row["partner"] == args["partner"]:
-                        out.append(row)        
+                        out.append(row)
                 else:
                     out.append(row)
         except Exception as e:
@@ -139,15 +139,13 @@ class Shipment(Resource):
             if shipment_data is None:
                 return jsonify({"error": "Shipment not found"}), 404
         except Exception as e:
-            return f"Internal error: {e}", 500    
+            return f"Internal error: {e}", 500
         row = json.loads(shipment_data)
         return jsonify(row), 200
 
-@ns_api.route('/shipment-event')
-class ShippingEvent(Resource):
-    @api.expect(shipping_event_model)
-    def post(self):
-        '''Post a new shipment event'''
+
+@app.route("/api/internal/shipment-event", methods=["POST"])
+def shipment_event_internal():
         payload = request.json
         shipment_id = payload["shipment_id"]
         try:
@@ -187,6 +185,28 @@ class ShippingEvent(Resource):
             return f"Shipment event <{new_event}> posted! The shipment status has been updated to <{shipment_status}>", 200
         except Exception as e:
             return f"Internal error: {e}", 500
+
+
+@ns_api.route('/shipment-event')
+class ShippingEvent(Resource):
+    @api.expect(shipping_event_model)
+    def post(self):
+        '''Post a new shipment event'''
+
+        payload = request.json
+        payload_str = json.dumps(request.json)
+
+        queue = "shipment_event_queue"
+
+        app.logger.warning(f"The following data is going to be pushed to the redis queue: queue: {queue} payload: {payload_str}")
+
+        try:
+            r.rpush(queue, payload_str)
+        except redis.RequestException as e:
+            return f"Internal error: {e}", 500
+
+        return f"Shipment event posted! The shipment status has been updated", 200
+
 
 @ns_api.route('/new-shipment')
 class NewShipment(Resource):
