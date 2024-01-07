@@ -1,16 +1,7 @@
-from flask import Flask, jsonify, render_template, request, abort, Response
-import random
+from flask import Flask, jsonify, render_template, request, abort
 import json
 import os
-import pint
-from pint import UnitRegistry
 import redis
-from redis.commands.json.path import Path
-import redis.commands.search.aggregation as aggregations
-import redis.commands.search.reducers as reducers
-from redis.commands.search.field import TextField, NumericField, TagField
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
-from redis.commands.search.query import NumericFilter, Query
 import time
 import datetime
 from flask_restx import Api, Resource, fields
@@ -28,7 +19,7 @@ shipment_model = api.model('Shipment', {
 })
 
 ns_api = api.namespace('api', description='Operations for API')
-
+ns_connector = api.namespace('connector', description='Connectors to support monolithic applications')
 
 #######################################################################################################################################
 #                                                         REDIS INITIALIZATION                                                        #
@@ -49,26 +40,6 @@ SHIPMENT_COUNTER = "SHIPMENT_COUNTER"
 
 
 #######################################################################################################################################
-#                                                         EXTERNAL CONNECTORS                                                         #
-#######################################################################################################################################
-
-@app.route("/connector/brontosaurus", methods=["POST"])
-def brontosaurus_push_redis():
-    payload = json.dumps(request.json)
-
-    queue = "brontosaurus_queue"
-
-    app.logger.warning(f"The following data has been pushed to the redis queue: queue: {queue} payload: {payload}")
-
-    try:
-        r.rpush(queue, payload)
-    except redis.RequestException:
-        abort(500)
-
-    return json.dumps({"status": "OK"})
-
-
-#######################################################################################################################################
 #                                                  MODELS FOR SWAGGER DOCUMENTATION                                                   #
 #######################################################################################################################################
 
@@ -82,11 +53,7 @@ shipping_event_model = api.model('ShippingEvent', {
     DELIVERED
     DAMAGED
     LOST''', example='PICKED_UP'),
-    'shipping_partner_id': fields.String(required=True, description='''An identifier from the shipment partner that pushed the update of the shipment.\nExamples:\n
-    UPS
-    Customs of France frontier
-    Laposte
-    etc.''', example='UPS')})
+    'shipping_partner_id': fields.String(required=True, description='''An identifier from the shipment partner that pushed the update of the shipment.''', example='TECHNOLOGIX SOLUTION DRIVER')})
 
 new_shipment_model = api.model('NewShipment', {
     "sender_name": fields.String(required=True, description='The name of the sender.', example='Martin Dupont'),
@@ -210,6 +177,21 @@ class NewShipment(Resource):
             return f"Data created successfully: \n{out}", 201
         except Exception as e:
             return e, 500
+
+
+#######################################################################################################################################
+#                                                         EXTERNAL CONNECTORS                                                         #
+#######################################################################################################################################
+
+@app.route("/connector/brontosaurus", methods=["POST"])
+def brontosaurus_push_redis():
+    payload = json.dumps(request.json)
+    queue = "brontosaurus_queue"
+    try:
+        r.rpush(queue, payload)
+    except redis.RequestException:
+        abort(500)
+    return json.dumps({"status": "OK"})
 
 
 #######################################################################################################################################

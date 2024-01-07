@@ -58,7 +58,7 @@ def get_shipments():
 
     return response.json()
 
-
+# WIP
 def post_shipping_event():
     
     data = get_shipments()
@@ -118,9 +118,9 @@ if __name__ == '__main__':
 
 
     while True:
-        # print(post_new_shipment())
+        print(post_new_shipment())
 
-        post_shipping_event()
+        # post_shipping_event()
 
 
         time.sleep(random.randint(2, 5))
