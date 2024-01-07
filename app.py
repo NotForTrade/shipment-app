@@ -43,7 +43,7 @@ SHIPMENT_COUNTER = "SHIPMENT_COUNTER"
 #                                                  MODELS FOR SWAGGER DOCUMENTATION                                                   #
 #######################################################################################################################################
 
-shipping_event_model = api.model('ShippingEvent', {
+shipping_event_model = api.model('ShipmentEvent', {
     'shipment_id': fields.String(required=True, description='''With N being an integer, the shipment_id is in the following format:\n
     shipment:N\n''', example='shipment:1'),
     'event': fields.String(required=True, description='''Event occuring during the delivery of the shipment.\nThe valid events are:\n
@@ -107,11 +107,8 @@ class Shipment(Resource):
         row = json.loads(shipment_data)
         return jsonify(row), 200
 
-@ns_api.route('/shipment-event')
-class ShippingEvent(Resource):
-    @api.expect(shipping_event_model)
-    def post(self):
-        '''Post a new shipment event'''
+@app.route("/api/internal/shipment-event", methods=["POST"])
+def shipment_event_internal():
         payload = request.json
         shipment_id = payload["shipment_id"]
         try:
@@ -119,7 +116,7 @@ class ShippingEvent(Resource):
             data = json.loads(raw_data)
             event = payload["event"]
             match event:
-                case "IN_TRANSIT":
+                case "PICKED_UP":
                     shipment_status = "IN TRANSIT"
                 case "PARCEL_CENTER":
                     shipment_status = "AT PARCEL CENTER"
@@ -145,6 +142,26 @@ class ShippingEvent(Resource):
             return f"Shipment event <{new_event}> posted! The shipment status has been updated to <{shipment_status}>", 200
         except Exception as e:
             return f"Internal error: {e}", 500
+
+@ns_api.route('/shipment-event')
+class ShipmentEvent(Resource):
+    @api.expect(shipping_event_model)
+    def post(self):
+        '''Post a new shipment event'''
+
+        payload = request.json
+        payload_str = json.dumps(request.json)
+
+        queue = "shipment_event_queue"
+
+        app.logger.warning(f"The following data is going to be pushed to the redis queue: queue: {queue} payload: {payload_str}")
+
+        try:
+            r.rpush(queue, payload_str)
+        except redis.RequestException as e:
+            return f"Internal error: {e}", 500
+
+        return f"Shipment event posted! The shipment status has been updated", 200
 
 @ns_api.route('/new-shipment')
 class NewShipment(Resource):

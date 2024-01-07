@@ -40,6 +40,40 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: shipment-event-worker
+  namespace: shipment-app
+  labels:
+    app: shipment-event-worker
+spec:
+  #replicas: 3
+  selector:
+    matchLabels:
+      app: shipment-event-worker
+  template:
+    metadata:
+      labels:
+        app: shipment-event-worker
+    spec:
+      containers:
+      - name: worker
+        image: shipment-app:latest
+        command: ["python"]
+        args: ["shipment_event_worker.py"]
+        imagePullPolicy: Never  # kind can't find the local image without this parameter
+        env:
+        - name: REDIS_HOST
+          value: redis-queue.redis.svc
+        - name: REDIS_PORT
+          value: "6379"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: brontosaurus-pop
   namespace: shipment-app
   labels:
@@ -60,8 +94,6 @@ spec:
         command: ["python"]
         args: ["brontosaurus_queue_worker.py"]
         imagePullPolicy: Never  # kind can't find the local image without this parameter
-        ports:
-        - containerPort: 5000
         env:
         - name: REDIS_HOST
           value: redis-queue.redis.svc
@@ -95,13 +127,9 @@ spec:
         command: ["python"]
         args: ["raptor.py"]
         imagePullPolicy: Never  # kind can't find the local image without this parameter
-        ports:
-        - containerPort: 5000
         env:
         - name: PYTHONUNBUFFERED
           value: "1"
-
-
 
 ---
 
@@ -124,6 +152,20 @@ kind: Service
 apiVersion: v1
 metadata:
   name: api
+  namespace: shipment-app
+spec:
+  selector:
+    app: shipment-app
+  ports:
+  # Default port used by the image
+  - port: 5000
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-internal
   namespace: shipment-app
 spec:
   selector:

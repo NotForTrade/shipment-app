@@ -4,12 +4,10 @@ It is using the main frame: /api/new-shipment and /api/
 
 """
 
-
 import requests
 import json
 import random
 import time
-
 
 
 with open("raptor.json") as f:

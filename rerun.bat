@@ -14,5 +14,7 @@ kubectl -n shipment-app rollout restart deploy/brontosaurus-pop
 
 kubectl -n shipment-app rollout restart deploy/raptor
 
+kubectl -n shipment-app rollout restart deploy/shipment-event-worker
+
 echo Done.
 pause
