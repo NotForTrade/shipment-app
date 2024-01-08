@@ -58,51 +58,29 @@ def get_shipments():
 
 # WIP
 def post_shipping_event():
-    
     data = get_shipments()
-    
     row = data[0]
 
     shipment_status = row["shipment_status"]
-
     match shipment_status:
-
-        case "ACKNOWLEDGED":
-            event = "DEPOSIT"
-
-
-        case "AT LOCAL PARCEL":
+        case "ACKNOWLEDGED":         
             event = "PICKED_UP"
-            
-
+        # Each of the following events are set to have 5% chance to result in a failed state
         case "IN TRANSIT":
-            event = "PARCEL_CENTER"
-
-
+            if random.randint(1,20) == 20:
+                event = random.choice(["BROKEN", "LOST"])
+            else:
+                event = random.choice(["PARCEL_CENTER", "CUSTOMS", "DELIVERED"])
         case "AT PARCEL CENTER":
-            event = "IN_TRANSIT"
-            event = "SUBMITTED_TO_CUSTOMS"
-
-
-
-
+            if random.randint(1,20) == 20:
+                event = random.choice(["BROKEN", "LOST"])
+            else:
+                event = "PICKED_UP"
         case "UNDERGOING INSPECTION":
-            event = "RECIEVED_BY_CUSTOMS"
-
-        case "CLEARED BY CUSTOMS":
-            event = "FINAL_DELIVERY"
-
-        case "APPROACHING DESTINATION":
-            event = "DELIVER"
-
-        case "COMPLETED":
-            pass
-            
-        case "BROKEN":
-            pass
-
-        case "LOST":
-            pass
+            if random.randint(1,20) == 20:
+                event = random.choice(["BROKEN", "LOST"])
+            else:
+                event = "PICKED_UP"
 
 
 

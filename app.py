@@ -95,17 +95,17 @@ class ShipmentList(Resource):
 
 @ns_api.route('/shipment/<shipment_id>')
 class Shipment(Resource):
-    @api.doc('get_shipments')
+    @api.doc('get_shipment')
     def get(self, shipment_id):
         '''Look for one shipment based on <shipment_id>'''
         try:
-            shipment_data = r.get(shipment_id)
-            if shipment_data is None:
+            shipment_data = r.get(f"shipment:{shipment_id}")
+            if shipment_data == None:
                 return jsonify({"error": "Shipment not found"}), 404
+            row = json.loads(shipment_data)
+            return row, 200
         except Exception as e:
-            return f"Internal error: {e}", 500    
-        row = json.loads(shipment_data)
-        return jsonify(row), 200
+            return f"Internal error: {e}", 500
 
 @app.route("/api/internal/shipment-event", methods=["POST"])
 def shipment_event_internal():
@@ -148,14 +148,10 @@ class ShipmentEvent(Resource):
     @api.expect(shipping_event_model)
     def post(self):
         '''Post a new shipment event'''
-
         payload = request.json
         payload_str = json.dumps(request.json)
-
         queue = "shipment_event_queue"
-
         app.logger.warning(f"The following data is going to be pushed to the redis queue: queue: {queue} payload: {payload_str}")
-
         try:
             r.rpush(queue, payload_str)
         except redis.RequestException as e:
@@ -173,18 +169,18 @@ class NewShipment(Resource):
         try:
             out = {
                 "shipment_status": "ACKNOWLEDGED",
-                "sender_name": data_in["sender_name"], #str()
-                "sender_address": data_in["sender_address"], #str()
-                "recipient_name": data_in["recipient_name"], #str()
-                "recipient_address": data_in["recipient_address"], #str()
+                "sender_name": data_in["sender_name"],
+                "sender_address": data_in["sender_address"],
+                "recipient_name": data_in["recipient_name"],
+                "recipient_address": data_in["recipient_address"],
                 "creation_time": str(datetime.datetime.fromtimestamp(time.time())),
                 "expedition_date": "-",
-                "desired_delivery_date": data_in["desired_delivery_date"], #datetime.date()
-                "weight": data_in["weight"], #int()
-                "volume": data_in["volume"], #int()
-                "perishable": data_in["perishable"], #datetime.date() | None
-                "high_value": data_in["high_value"], #int() | None
-                "fragile": data_in["fragile"], #bool()
+                "desired_delivery_date": data_in["desired_delivery_date"],
+                "weight": data_in["weight"],
+                "volume": data_in["volume"],
+                "perishable": data_in["perishable"],
+                "high_value": data_in["high_value"],
+                "fragile": data_in["fragile"],
                 "partner": data_in["partner"],
                 "event_history": []
                 }
