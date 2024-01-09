@@ -52,7 +52,7 @@ def get_shipments():
     return response.json()
 
 
-def post_shipping_event():
+def post_shipment_event():
     data = get_shipments()
 
     try:
@@ -69,20 +69,24 @@ def post_shipping_event():
                 updatable_shipments.append(shipment)
         chosen_shipment = random.choice(updatable_shipments)
 
-        print(chosen_shipment)
-        input()
+
         # shipment_id is in the format 'shipment:N', we want to only retrieve the N
         shipment_id = chosen_shipment["shipment_id"].split(':')[1]
         shipment_status = chosen_shipment["shipment_status"]
 
+        print('---------------------------------------------------------')
+        print(f"shipment status: {shipment_status}")
+
         # Generating the event
         if shipment_status == "ACKNOWLEDGED":
             event = "PICKED_UP"
-        elif random.int(1, 20) == 20:
-            event = random.choice(["BROKEN", "LOST"])
+        elif random.randint(1, 20) == 20:
+            event = random.choice(["DAMAGED", "LOST"])
         else:
             event = random.choice(status_update_table[shipment_status])
         
+        print(f"event: {event}")
+
         # Generating the shipping_partner_id based on the event
         broken_partner_table = {
             "IN TRANSIT": f"RAPTOR_DELIVERYMAN{random.randint(0,100)}",
@@ -95,7 +99,7 @@ def post_shipping_event():
             "CUSTOMS": f"CUSTOMS{random.randint(0,100)}",
             "DELIVERED": f"RAPTOR_DELIVERYMAN{random.randint(0,100)}",
         }
-        if event in ["BROKEN", "LOST"]:
+        if event in ["DAMAGED", "LOST"]:
             shipping_partner_id = broken_partner_table[shipment_status]
         else:
             shipping_partner_id = shipping_partner_table[event]
@@ -107,10 +111,11 @@ def post_shipping_event():
         url = 'http://api:5000/api/shipment-event'
         response = requests.post(url, json=payload)
 
-        return response, event
+        return event
     
     except Exception as e:
-        return e
+        print(e)
+        return ""
 
 
 
@@ -126,17 +131,16 @@ if __name__ == '__main__':
                 post_new_shipment()
                 raptor_count +=1
             else:
-                (response, event) = post_shipping_event()
-                if event in ["DELIVERED", "BROKEN", "LOST"]:
+                event = post_shipment_event()
+                if event in ["DELIVERED", "DAMAGED", "LOST"]:
                     raptor_count -= 1
-                else:
-                    raptor_count += 1
-        else:
-            (response, event) = post_shipping_event()
-            if event in ["DELIVERED", "BROKEN", "LOST"]:
-                raptor_count -= 1
-            else:
-                raptor_count += 1
 
-        time.sleep(random.randint(2, 5))
+        else:
+            event = post_shipment_event()
+            if event in ["DELIVERED", "DAMAGED", "LOST"]:
+                raptor_count -= 1
+
+        
+        time.sleep(1)
+        # time.sleep(random.randint(2, 5))
 

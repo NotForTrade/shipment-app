@@ -115,19 +115,18 @@ def shipment_event_internal():
             raw_data = r.get(f"shipment:{shipment_id}")
             data = json.loads(raw_data)
             event = payload["event"]
-            match event:
-                case "PICKED_UP":
-                    shipment_status = "IN TRANSIT"
-                case "PARCEL_CENTER":
-                    shipment_status = "AT PARCEL CENTER"
-                case "CUSTOMS":
-                    shipment_status = "UNDERGOING INSPECTION"
-                case "DELIVERED":
-                    shipment_status = "COMPLETED"
-                case "DAMAGED":
-                    shipment_status = "FAILED - DAMAGED"
-                case "LOST":
-                    shipment_status = "FAILED - LOST"
+            if event == "PICKED_UP":
+                shipment_status = "IN TRANSIT"
+            elif event == "PARCEL_CENTER":
+                shipment_status = "AT PARCEL CENTER"
+            elif event == "CUSTOMS":
+                shipment_status = "UNDERGOING INSPECTION"
+            elif event == "DELIVERED":
+                shipment_status = "COMPLETED"
+            elif event == "DAMAGED":
+                shipment_status = "FAILED - DAMAGED"
+            elif event == "LOST":
+                shipment_status = "FAILED - LOST"
             if shipment_status == "IN TRANSIT":
                 data["expedition_date"] = str(datetime.datetime.now())
             new_event = {
