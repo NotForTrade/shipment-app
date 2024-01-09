@@ -3,50 +3,68 @@ import random
 import redis
 
 def get_shipments():
-
-    # url = 'http://api:5000/api/shipments?partner=RAPTOR'
-
-    url = 'http://127.0.0.1/api/shipment/1'
-
+    url = 'http://api:5000/api/shipments?partner=RAPTOR'
     response = requests.get(url)
-
     return response.json()
 
-# WIP
 def post_shipping_event():
-
-    url = 'http://127.0.0.1/api/shipment-event'
-
     data = get_shipments()
 
-    updatable_status = {
-        "ACKNOWLEDGED": ["PICKED_UP"],
-        "IN TRANSIT": ["PARCEL_CENTER", "CUSTOMS", "DELIVERED"],
-        "AT PARCEL CENTER": ["PICKED_UP"],
-        "UNDERGOING INSPECTION": ["PICKED_UP"]
-    }
+    try:
+        # Exclude all the shipments that are either completed or failed
+        status_update_table = {
+            "ACKNOWLEDGED": ["PICKED_UP"],
+            "IN TRANSIT": ["PARCEL_CENTER", "CUSTOMS", "DELIVERED"],
+            "AT PARCEL CENTER": ["PICKED_UP"],
+            "UNDERGOING INSPECTION": ["PICKED_UP"]
+        }
+        updatable_shipments = list()
+        for shipment in data:
+            if shipment["shipment_status"] in status_update_table.keys():
+                updatable_shipments.append(shipment)
+        chosen_shipment = random.choice(updatable_shipments)
 
-    updatable_shipments = list()
-    for shipment in data:
-        if data["shipment_status"] in updatable_status:
-            updatable_shipments.append(shipment)
+        # shipment_id is in the format 'shipment:N', we want to only retrieve the N
+        shipment_id = chosen_shipment["shipment_id"].split(':')[1]
+        shipment_status = chosen_shipment["shipment_status"]
 
-    chosen_shipment = random.choice(updatable_shipments)
+        # Generating the event
+        if shipment_status == "ACKNOWLEDGED":
+            event = "PICKED_UP"
+        elif random.int(1, 20) == 20:
+            event = random.choice(["BROKEN", "LOST"])
+        else:
+            event = random.choice(status_update_table[shipment_status])
+        
+        # Generating the shipping_partner_id based on the event
+        broken_partner_table = {
+            "IN TRANSIT": f"RAPTOR_DELIVERYMAN{random.randint(0,100)}",
+            "AT PARCEL CENTER": f"RAPTOR_WHAREHOUSEMAN{random.randint(0,100)}",
+            "UNDERGOING INSPECTION": f"CUSTOMS{random.randint(0,100)}"
+        }
+        shipping_partner_table = {
+            "PICKED_UP": f"RAPTOR_DELIVERYMAN{random.randint(0,100)}",
+            "PARCEL_CENTER": f"RAPTOR_WHAREHOUSEMAN{random.randint(0,100)}",
+            "CUSTOMS": f"CUSTOMS{random.randint(0,100)}",
+            "DELIVERED": f"RAPTOR_DELIVERYMAN{random.randint(0,100)}",
+        }
+        if event in ["BROKEN", "LOST"]:
+            shipping_partner_id = broken_partner_table[shipment_status]
+        else:
+            shipping_partner_id = shipping_partner_table[event]
 
-    shipment_id = chosen_shipment["shipment_id"]
+        # Compiling the shipment_id, event and shipping_partner_id in the payload
+        payload = dict(shipment_id=shipment_id, event=event, shipping_partner_id=shipping_partner_id)
 
-    
-    # payload = dict(shipment_id=)
+        # Posting the new event
+        url = 'http://127.0.0.1/api/shipment-event'
+        response = requests.post(url, json=payload)
+        return response.text, payload
+    except Exception as e:
+        return e
 
-    # response = requests.post(url, payload)
-
-
-
+raptor_counter = 0
 if __name__ == '__main__':
-    # post_shipping_event()
 
-    # print(get_shipments())
+    print(post_shipping_event())
 
-    r = redis.Redis(host='127.0.0.1', port=30000, decode_responses=True)
-
-    print(r.get(f'shipment:{1}'))

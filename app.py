@@ -112,7 +112,7 @@ def shipment_event_internal():
         payload = request.json
         shipment_id = payload["shipment_id"]
         try:
-            raw_data = r.get(shipment_id)
+            raw_data = r.get(f"shipment:{shipment_id}")
             data = json.loads(raw_data)
             event = payload["event"]
             match event:
@@ -137,9 +137,8 @@ def shipment_event_internal():
             }
             data["shipment_status"] = shipment_status
             data["event_history"].append(new_event)
-            app.logger.warning(f"New data: {data}")
-            r.set(shipment_id, json.dumps(data))
-            return f"Shipment event <{new_event}> posted! The shipment status has been updated to <{shipment_status}>", 200
+            r.set(f"shipment:{shipment_id}", json.dumps(data))
+            return f"Shipment event <{new_event}> posted! The shipment status has been updated to <{shipment_status}>", 201
         except Exception as e:
             return f"Internal error: {e}", 500
 
@@ -148,16 +147,17 @@ class ShipmentEvent(Resource):
     @api.expect(shipping_event_model)
     def post(self):
         '''Post a new shipment event'''
-        payload = request.json
-        payload_str = json.dumps(request.json)
-        queue = "shipment_event_queue"
-        app.logger.warning(f"The following data is going to be pushed to the redis queue: queue: {queue} payload: {payload_str}")
         try:
+            payload = request.json
+            payload_str = json.dumps(request.json)
+            queue = "shipment_event_queue"
+            app.logger.warning(f"The following data is going to be pushed to the redis queue: queue: {queue} payload: {payload_str}")
             r.rpush(queue, payload_str)
+            return f"Shipment event posted! The shipment status has been updated", 201
         except redis.RequestException as e:
             return f"Internal error: {e}", 500
 
-        return f"Shipment event posted! The shipment status has been updated", 200
+        
 
 @ns_api.route('/new-shipment')
 class NewShipment(Resource):
